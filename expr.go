@@ -9,3 +9,7 @@ func If[T constraint.Comparable](expr bool, trueVale, falseValue T) T {
 	}
 	return falseValue
 }
+
+func Block() {
+	select {}
+}
