@@ -4,7 +4,6 @@ import (
 	"github.com/bang-go/util/constraint"
 	"math/rand"
 	"strconv"
-	"time"
 )
 
 // IntToString Int转化String(10进制)
@@ -21,6 +20,6 @@ func IntRandRange[T constraint.Integer](n1 T, n2 T) int64 {
 	if n1 == n2 {
 		return int64(n1)
 	}
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return r.Int63n(int64(n2-n1)) + int64(n1)
+	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return rand.Int63n(int64(n2-n1)) + int64(n1)
 }
