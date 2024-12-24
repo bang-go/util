@@ -33,3 +33,9 @@ func HmacSha256(key, data string) string {
 	hash.Write([]byte(data))
 	return hex.EncodeToString(hash.Sum(nil))
 }
+
+func HmacSha1(key, data string) string {
+	hash := hmac.New(sha1.New, []byte(key))
+	hash.Write([]byte(data))
+	return hex.EncodeToString(hash.Sum(nil))
+}
