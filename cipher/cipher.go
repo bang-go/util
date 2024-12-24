@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 )
 
@@ -37,5 +38,6 @@ func HmacSha256(key, data string) string {
 func HmacSha1(key, data string) string {
 	hash := hmac.New(sha1.New, []byte(key))
 	hash.Write([]byte(data))
-	return hex.EncodeToString(hash.Sum(nil))
+	//return hex.EncodeToString(hash.Sum(nil))
+	return base64.StdEncoding.EncodeToString(hash.Sum(nil))
 }
