@@ -20,10 +20,10 @@ type RetryFunc = func() error
 
 // ErrorRetry 错误重试
 func ErrorRetry(maxRetry int, rf RetryFunc) (err error) {
-	return ErrorRetryWithInterval(maxRetry, rf, 0)
+	return ErrorRetryWithInterval(maxRetry, 0, rf)
 }
 
-func ErrorRetryWithInterval(maxRetry int, rf RetryFunc, interval time.Duration) (err error) {
+func ErrorRetryWithInterval(maxRetry int, interval time.Duration, rf RetryFunc) (err error) {
 	if maxRetry <= 0 {
 		return
 	}
