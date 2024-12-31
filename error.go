@@ -36,3 +36,13 @@ func ErrorRetryWithInterval(maxRetry int, interval time.Duration, rf RetryFunc) 
 	}
 	return
 }
+
+// FindFirstError 检测error切片中，有值的首个error
+func FindFirstError(errs []error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
