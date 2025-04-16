@@ -53,6 +53,23 @@ func FloatDiv[T constraint.Float](dividend T, args ...T) float64 {
 	return res
 }
 
+// FloatCeil 向下取整
+func FloatCeil[T constraint.Float](val T, precision int32) int64 {
+	v := decimal.NewFromFloat(float64(val))
+	return v.Ceil().IntPart()
+}
+func FloatFloor[T constraint.Float](val T, precision int32) int64 {
+	v := decimal.NewFromFloat(float64(val))
+	return v.Floor().IntPart()
+}
+
+// FloatTruncate 截断
+func FloatTruncate[T constraint.Float](val T, precision int32) float64 {
+	v := decimal.NewFromFloat(float64(val))
+	res, _ := v.Truncate(precision).Float64()
+	return res
+}
+
 // FloatCompare 比较
 func FloatCompare[T constraint.Float](v1 T, v2 T) int {
 	cV1 := decimal.NewFromFloat(float64(v1))
