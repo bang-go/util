@@ -50,6 +50,18 @@ func StringRandLetter(length int) string {
 	return stringRand(charset, length)
 }
 
+// StringRandLowerLetter 随机小写字母
+func StringRandLowerLetter(length int) string {
+	charset := []byte(lowerLetter)
+	return stringRand(charset, length)
+}
+
+// StringRandUpperLetter 随机大写字母
+func StringRandUpperLetter(length int) string {
+	charset := []byte(upperLetter)
+	return stringRand(charset, length)
+}
+
 func stringRand(charset []byte, length int) string {
 	//使用这种方式会导致for循环中随机值相同，直接使用rand即可
 	//source := rand.NewSource(time.Now().UnixNano())
