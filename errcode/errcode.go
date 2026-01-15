@@ -33,6 +33,9 @@ func Code(err error) int {
 	}
 	var e *Error
 	if errors.As(err, &e) {
+		if e == nil {
+			return -1
+		}
 		return e.Code
 	}
 	return -1 // Indicates unknown/internal error
@@ -45,6 +48,9 @@ func Msg(err error) string {
 	}
 	var e *Error
 	if errors.As(err, &e) {
+		if e == nil {
+			return ""
+		}
 		return e.Msg
 	}
 	return err.Error()
@@ -54,6 +60,9 @@ func Msg(err error) string {
 // It considers two errors equal if they are both *Error and have the same Code.
 // This allows errors.Is(err, ErrNotFound) to work even if messages differ.
 func (e *Error) Is(target error) bool {
+	if e == nil {
+		return false
+	}
 	var t *Error
 	ok := errors.As(target, &t)
 	if !ok {

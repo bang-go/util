@@ -69,3 +69,20 @@ func TestIsCode(t *testing.T) {
 		t.Error("IsCode(nil) should be false")
 	}
 }
+
+func TestTypedNil(t *testing.T) {
+	var e *Error // nil pointer of type *Error
+	var err error = e
+
+	if Code(err) != -1 {
+		t.Errorf("Expected code -1 for typed nil, got %d", Code(err))
+	}
+	if Msg(err) != "" {
+		t.Errorf("Expected empty msg for typed nil, got %q", Msg(err))
+	}
+
+	// Test Is method safety
+	if e.Is(errors.New("foo")) {
+		t.Error("nil *Error.Is should return false")
+	}
+}
