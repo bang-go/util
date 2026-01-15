@@ -1,15 +1,14 @@
 package util
 
-import "github.com/bang-go/util/constraint"
-
-// If 三元表达式
-func If[T constraint.Comparable](expr bool, trueVale, falseValue T) T {
-	if expr {
-		return trueVale
+// If acts as a ternary operator: returns trueVal if ok is true, else falseVal.
+func If[T any](ok bool, trueVal, falseVal T) T {
+	if ok {
+		return trueVal
 	}
-	return falseValue
+	return falseVal
 }
 
+// Block blocks the current goroutine forever.
 func Block() {
 	select {}
 }

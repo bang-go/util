@@ -3,10 +3,11 @@ package util
 import (
 	"github.com/bang-go/util/constraint"
 	"github.com/shopspring/decimal"
+	"math"
 	"strconv"
 )
 
-// FloatToString String FloatToString Float转化String
+// FloatToString Float转化String
 // prc precision精度
 func FloatToString[T constraint.Float](val T, prc int) (str string) {
 	str = strconv.FormatFloat(float64(val), 'f', prc, 64)
@@ -53,14 +54,20 @@ func FloatDiv[T constraint.Float](dividend T, args ...T) float64 {
 	return res
 }
 
-// FloatCeil 向下取整
-func FloatCeil[T constraint.Float](val T, precision int32) int64 {
+// FloatCeil 向上取整 (respects precision)
+func FloatCeil[T constraint.Float](val T, precision int32) float64 {
 	v := decimal.NewFromFloat(float64(val))
-	return v.Ceil().IntPart()
+	exp := decimal.New(1, precision)
+	res, _ := v.Mul(exp).Ceil().Div(exp).Float64()
+	return res
 }
-func FloatFloor[T constraint.Float](val T, precision int32) int64 {
+
+// FloatFloor 向下取整 (respects precision)
+func FloatFloor[T constraint.Float](val T, precision int32) float64 {
 	v := decimal.NewFromFloat(float64(val))
-	return v.Floor().IntPart()
+	exp := decimal.New(1, precision)
+	res, _ := v.Mul(exp).Floor().Div(exp).Float64()
+	return res
 }
 
 // FloatTruncate 截断
@@ -77,9 +84,7 @@ func FloatCompare[T constraint.Float](v1 T, v2 T) int {
 	return cV1.Cmp(cV2)
 }
 
-// FloatAbs 　绝对值
+// FloatAbs 绝对值
 func FloatAbs[T constraint.Float](v T) float64 {
-	result := decimal.NewFromFloat(float64(v)).Abs()
-	res, _ := result.Float64()
-	return res
+	return math.Abs(float64(v))
 }

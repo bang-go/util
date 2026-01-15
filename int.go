@@ -1,25 +1,26 @@
 package util
 
 import (
+	"crypto/rand"
+	"math/big"
+
 	"github.com/bang-go/util/constraint"
-	"math/rand"
-	"strconv"
 )
 
-// IntToString Int转化String(10进制)
-func IntToString[T constraint.Integer](val T) (str string) {
-	str = strconv.FormatInt(int64(val), 10)
-	return
-}
+// IntRandRange 区间随机数 (Secure)
+func IntRandRange[T constraint.Integer](n1 T, n2 T) (int64, error) {
+	v1, v2 := int64(n1), int64(n2)
+	if v2 < v1 {
+		v1, v2 = v2, v1
+	}
+	if v1 == v2 {
+		return v1, nil
+	}
 
-// IntRandRange 区间随机数
-func IntRandRange[T constraint.Integer](n1 T, n2 T) int64 {
-	if n2 < n1 {
-		n1, n2 = n2, n1
+	maxIdx := big.NewInt(v2 - v1)
+	n, err := rand.Int(rand.Reader, maxIdx)
+	if err != nil {
+		return 0, err
 	}
-	if n1 == n2 {
-		return int64(n1)
-	}
-	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return rand.Int63n(int64(n2-n1)) + int64(n1)
+	return n.Int64() + v1, nil
 }

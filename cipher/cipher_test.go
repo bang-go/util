@@ -5,21 +5,21 @@ import (
 	"testing"
 )
 
-func TestSha256(t *testing.T) {
+func TestSha256Hex(t *testing.T) {
 	str := "hello world"
-	fmt.Println(Sha256(str))
+	fmt.Println(Sha256Hex(str))
 }
 
-func TestHmac(t *testing.T) {
+func TestHmacMd5Hex(t *testing.T) {
 	str := "hello world"
 	key := "123"
-	fmt.Println(Hmac(key, str))
+	fmt.Println(HmacMd5Hex(key, str))
 }
 
-func BenchmarkSha256(b *testing.B) {
+func BenchmarkSha256Hex(b *testing.B) {
 	str := "hello world"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Sha256(str)
+		Sha256Hex(str)
 	}
 }

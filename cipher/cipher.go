@@ -5,39 +5,48 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 )
 
-func Md5(s string) string {
+// Md5Hex returns the MD5 checksum of the data in hex string.
+// Deprecated: MD5 is insecure. Use Sha256Hex instead.
+func Md5Hex(s string) string {
 	sum := md5.Sum([]byte(s))
 	return hex.EncodeToString(sum[:])
 }
 
-func Sha1(s string) string {
+// Sha1Hex returns the SHA1 checksum of the data in hex string.
+// Deprecated: SHA1 is insecure. Use Sha256Hex instead.
+func Sha1Hex(s string) string {
 	sum := sha1.Sum([]byte(s))
 	return hex.EncodeToString(sum[:])
 }
 
-func Sha256(s string) string {
+// Sha256Hex returns the SHA256 checksum of the data in hex string.
+func Sha256Hex(s string) string {
 	sum := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(sum[:])
 }
 
-func Hmac(key, data string) string {
-	hash := hmac.New(md5.New, []byte(key)) // 创建对应的md5哈希加密算法
-	hash.Write([]byte(data))
-	return hex.EncodeToString(hash.Sum(nil))
-}
-func HmacSha256(key, data string) string {
-	hash := hmac.New(sha256.New, []byte(key)) //创建对应的sha256哈希加密算法
+// HmacMd5Hex returns the HMAC-MD5 of the data in hex string.
+// Deprecated: MD5 is insecure. Use HmacSha256Hex instead.
+func HmacMd5Hex(key, data string) string {
+	hash := hmac.New(md5.New, []byte(key))
 	hash.Write([]byte(data))
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func HmacSha1(key, data string) string {
+// HmacSha256Hex returns the HMAC-SHA256 of the data in hex string.
+func HmacSha256Hex(key, data string) string {
+	hash := hmac.New(sha256.New, []byte(key))
+	hash.Write([]byte(data))
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+// HmacSha1Hex returns the HMAC-SHA1 of the data in hex string.
+// Deprecated: SHA1 is insecure. Use HmacSha256Hex instead.
+func HmacSha1Hex(key, data string) string {
 	hash := hmac.New(sha1.New, []byte(key))
 	hash.Write([]byte(data))
-	//return hex.EncodeToString(hash.Sum(nil))
-	return base64.StdEncoding.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(hash.Sum(nil))
 }

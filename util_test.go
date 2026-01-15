@@ -8,7 +8,10 @@ import (
 
 func TestStringRand(t *testing.T) {
 	for i := 0; i < 100; i++ {
-		str := util.StringRand(10)
+		str, err := util.StringRand(10)
+		if err != nil {
+			t.Fatalf("StringRand failed: %v", err)
+		}
 		log.Println(str)
 	}
 }
