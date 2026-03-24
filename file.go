@@ -4,53 +4,63 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 )
 
-type PathWrapper struct {
+// ErrNilFile indicates that a file helper received a nil file handle.
+var ErrNilFile = errors.New("util: nil file")
+
+const ensureDirPerm = 0o755
+
+// CallerInfo describes a caller source location.
+type CallerInfo struct {
 	File string
 	Dir  string
 	Line int
 }
 
-func Path() *PathWrapper {
-	return PathWithCallerSkip(2)
+// Caller returns the caller source location.
+func Caller() CallerInfo {
+	return CallerSkip(2)
 }
 
-func PathWithCallerSkip(skip int) *PathWrapper {
-	_, file, line, _ := runtime.Caller(skip)
-	return &PathWrapper{
+// CallerSkip returns caller source location for the given runtime.Caller skip.
+func CallerSkip(skip int) CallerInfo {
+	_, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		return CallerInfo{}
+	}
+
+	return CallerInfo{
 		File: file,
-		Dir:  path.Dir(file),
+		Dir:  filepath.Dir(file),
 		Line: line,
 	}
 }
 
+// FilePosition returns the current offset of file.
 func FilePosition(file *os.File) (int64, error) {
 	if file == nil {
-		return 0, errors.New("null fd when retrieving file position")
+		return 0, ErrNilFile
 	}
 	return file.Seek(0, io.SeekCurrent)
 }
 
-func FileExist(name string) (b bool, err error) {
+// FileExists reports whether the named path exists.
+// It returns false, nil when the path does not exist.
+func FileExists(name string) (bool, error) {
 	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return false, nil
 		}
+		return false, err
 	}
-	// Propagates the error if the error is not FileNotExist error.
-	return true, err
+
+	return true, nil
 }
 
-func CreateDirIfNotExist(dirname string) error {
-	if _, err := os.Stat(dirname); err != nil {
-		if os.IsNotExist(err) {
-			return os.MkdirAll(dirname, os.ModePerm)
-		} else {
-			return err
-		}
-	}
-	return nil
+// EnsureDir creates dirname and its parents when they do not exist.
+func EnsureDir(dirname string) error {
+	return os.MkdirAll(dirname, ensureDirPerm)
 }

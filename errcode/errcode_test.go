@@ -1,6 +1,7 @@
 package errcode
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -8,7 +9,7 @@ import (
 
 func TestError_Error(t *testing.T) {
 	err := New(404, "Not Found")
-	expected := "code: 404, msg: Not Found"
+	expected := "code=404 message=Not Found"
 	if err.Error() != expected {
 		t.Errorf("Expected %q, got %q", expected, err.Error())
 	}
@@ -17,28 +18,30 @@ func TestError_Error(t *testing.T) {
 func TestHelpers(t *testing.T) {
 	err := New(500, "Internal Server Error")
 
-	if Code(err) != 500 {
-		t.Errorf("Expected code 500, got %d", Code(err))
+	code, ok := Code(err)
+	if !ok || code != 500 {
+		t.Errorf("Expected code 500, got (%d, %v)", code, ok)
 	}
-	if Msg(err) != "Internal Server Error" {
-		t.Errorf("Expected msg 'Internal Server Error', got %q", Msg(err))
+	message, ok := Message(err)
+	if !ok || message != "Internal Server Error" {
+		t.Errorf("Expected message 'Internal Server Error', got (%q, %v)", message, ok)
 	}
 
 	// Test with standard error
 	stdErr := errors.New("standard error")
-	if Code(stdErr) != -1 {
-		t.Errorf("Expected code -1 for std error, got %d", Code(stdErr))
+	if _, ok := Code(stdErr); ok {
+		t.Error("Expected Code(stdErr) to return ok=false")
 	}
-	if Msg(stdErr) != "standard error" {
-		t.Errorf("Expected msg 'standard error', got %q", Msg(stdErr))
+	if _, ok := Message(stdErr); ok {
+		t.Error("Expected Message(stdErr) to return ok=false")
 	}
 
 	// Test with nil
-	if Code(nil) != 0 {
-		t.Errorf("Expected code 0 for nil, got %d", Code(nil))
+	if _, ok := Code(nil); ok {
+		t.Error("Expected Code(nil) to return ok=false")
 	}
-	if Msg(nil) != "" {
-		t.Errorf("Expected empty msg for nil, got %q", Msg(nil))
+	if _, ok := Message(nil); ok {
+		t.Error("Expected Message(nil) to return ok=false")
 	}
 }
 
@@ -55,18 +58,18 @@ func TestIs(t *testing.T) {
 	}
 }
 
-func TestIsCode(t *testing.T) {
+func TestHasCode(t *testing.T) {
 	err := New(404, "foo")
 	wrapped := fmt.Errorf("wrap: %w", err)
 
-	if !IsCode(wrapped, 404) {
-		t.Error("IsCode failed on wrapped error")
+	if !HasCode(wrapped, 404) {
+		t.Error("HasCode failed on wrapped error")
 	}
-	if IsCode(wrapped, 500) {
-		t.Error("IsCode matched wrong code")
+	if HasCode(wrapped, 500) {
+		t.Error("HasCode matched wrong code")
 	}
-	if IsCode(nil, 404) {
-		t.Error("IsCode(nil) should be false")
+	if HasCode(nil, 404) {
+		t.Error("HasCode(nil) should be false")
 	}
 }
 
@@ -74,15 +77,48 @@ func TestTypedNil(t *testing.T) {
 	var e *Error // nil pointer of type *Error
 	var err error = e
 
-	if Code(err) != -1 {
-		t.Errorf("Expected code -1 for typed nil, got %d", Code(err))
+	if _, ok := Code(err); ok {
+		t.Error("Expected Code(typed nil) to return ok=false")
 	}
-	if Msg(err) != "" {
-		t.Errorf("Expected empty msg for typed nil, got %q", Msg(err))
+	if _, ok := Message(err); ok {
+		t.Error("Expected Message(typed nil) to return ok=false")
+	}
+	if err.Error() != "<nil>" {
+		t.Errorf("Expected <nil> for typed nil Error(), got %q", err.Error())
 	}
 
 	// Test Is method safety
 	if e.Is(errors.New("foo")) {
 		t.Error("nil *Error.Is should return false")
+	}
+	if HasCode(err, 404) {
+		t.Error("HasCode(typed nil) should return false")
+	}
+
+	var target *Error
+	var targetErr error = target
+	if e := New(404, "foo"); errors.Is(e, targetErr) {
+		t.Error("errors.Is with typed nil target should be false")
+	}
+}
+
+func TestAs(t *testing.T) {
+	err := fmt.Errorf("wrap: %w", New(401, "unauthorized"))
+	got, ok := As(err)
+	if !ok {
+		t.Fatal("As() should find errcode.Error in wrapped chain")
+	}
+	if got.Code != 401 || got.Message != "unauthorized" {
+		t.Fatalf("As() = %+v", got)
+	}
+}
+
+func TestJSON(t *testing.T) {
+	data, err := json.Marshal(New(403, "forbidden"))
+	if err != nil {
+		t.Fatalf("Marshal() error = %v", err)
+	}
+	if string(data) != `{"code":403,"message":"forbidden"}` {
+		t.Fatalf("Marshal() = %s", data)
 	}
 }

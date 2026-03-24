@@ -7,53 +7,56 @@ import (
 
 // Error represents a business error with a code and a message.
 type Error struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 // Error implements the standard error interface.
 // It returns a string representation of the error.
 func (e *Error) Error() string {
-	return fmt.Sprintf("code: %d, msg: %s", e.Code, e.Msg)
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("code=%d message=%s", e.Code, e.Message)
 }
 
 // New creates a new Error instance.
-func New(code int, msg string) *Error {
+func New(code int, message string) *Error {
 	return &Error{
-		Code: code,
-		Msg:  msg,
+		Code:    code,
+		Message: message,
 	}
 }
 
-// Code returns the error code.
-// This helper is useful when working with the interface error.
-func Code(err error) int {
-	if err == nil {
-		return 0 // Or 200, depending on convention, but 0 usually means success/no error
-	}
+// As returns the first *Error found in err's chain.
+func As(err error) (*Error, bool) {
 	var e *Error
 	if errors.As(err, &e) {
-		if e == nil {
-			return -1
+		if e != nil {
+			return e, true
 		}
-		return e.Code
 	}
-	return -1 // Indicates unknown/internal error
+	return nil, false
 }
 
-// Msg returns the error message.
-func Msg(err error) string {
-	if err == nil {
-		return ""
+// Code returns the error code and whether err contains an errcode.Error.
+func Code(err error) (int, bool) {
+	e, ok := As(err)
+	if !ok {
+		return 0, false
 	}
-	var e *Error
-	if errors.As(err, &e) {
-		if e == nil {
-			return ""
-		}
-		return e.Msg
+
+	return e.Code, true
+}
+
+// Message returns the error message and whether err contains an errcode.Error.
+func Message(err error) (string, bool) {
+	e, ok := As(err)
+	if !ok {
+		return "", false
 	}
-	return err.Error()
+
+	return e.Message, true
 }
 
 // Is implements the standard errors.Is interface.
@@ -65,21 +68,14 @@ func (e *Error) Is(target error) bool {
 	}
 	var t *Error
 	ok := errors.As(target, &t)
-	if !ok {
+	if !ok || t == nil {
 		return false
 	}
 	return e.Code == t.Code
 }
 
-// IsCode checks if the error (or any error in its chain) is an *Error with the given code.
-func IsCode(err error, code int) bool {
-	if err == nil {
-		return false
-	}
-	var e *Error
-	// errors.As unwraps the error chain to find the first *Error
-	if errors.As(err, &e) {
-		return e.Code == code
-	}
-	return false
+// HasCode checks if the error (or any error in its chain) is an *Error with the given code.
+func HasCode(err error, code int) bool {
+	e, ok := As(err)
+	return ok && e.Code == code
 }

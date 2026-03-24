@@ -13,8 +13,8 @@ func MapKeyForValue[K comparable, V comparable](m map[K]V, v V) (K, bool) {
 	return zero, false
 }
 
-// MapContainValue map是否包含目标value
-func MapContainValue[K comparable, V comparable](m map[K]V, v V) bool {
+// MapContainsValue reports whether m contains the target value.
+func MapContainsValue[K comparable, V comparable](m map[K]V, v V) bool {
 	for _, val := range m {
 		if val == v {
 			return true

@@ -1,25 +1,30 @@
 package cipher
 
 import (
-	"fmt"
 	"testing"
 )
 
-func TestSha256Hex(t *testing.T) {
-	str := "hello world"
-	fmt.Println(Sha256Hex(str))
+func TestHexDigests(t *testing.T) {
+	input := "hello world"
+
+	if got := SHA256Hex(input); got != "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9" {
+		t.Fatalf("SHA256Hex() = %q", got)
+	}
 }
 
-func TestHmacMd5Hex(t *testing.T) {
-	str := "hello world"
+func TestHMACDigests(t *testing.T) {
 	key := "123"
-	fmt.Println(HmacMd5Hex(key, str))
+	input := "hello world"
+
+	if got := HMACSHA256Hex(key, input); got != "8de9bbe5596700556793559dd70e6486684f379d162f70a4a341b3ee383565d4" {
+		t.Fatalf("HMACSHA256Hex() = %q", got)
+	}
 }
 
-func BenchmarkSha256Hex(b *testing.B) {
+func BenchmarkSHA256Hex(b *testing.B) {
 	str := "hello world"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Sha256Hex(str)
+		SHA256Hex(str)
 	}
 }

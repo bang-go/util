@@ -2,8 +2,18 @@ package util
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 	"strings"
+)
+
+// ErrNegativeLength indicates that a helper received a negative length.
+var ErrNegativeLength = errors.New("util: negative length")
+
+const (
+	lowerLetters = "abcdefghijklmnopqrstuvwxyz"
+	upperLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	digits       = "0123456789"
 )
 
 // IsBlank checks whether the given string is blank.
@@ -11,41 +21,39 @@ func IsBlank(s string) bool {
 	return strings.TrimSpace(s) == ""
 }
 
-const (
-	lowerLetter = "abcdefghijklmnopqrstuvwxyz"
-	upperLetter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	number      = "0123456789"
-)
-
-// StringRand 随机字符串 (Secure)
+// StringRand returns a cryptographically secure random alphanumeric string.
 func StringRand(length int) (string, error) {
-	return randomString(lowerLetter+upperLetter+number, length)
+	return randomString(lowerLetters+upperLetters+digits, length)
 }
 
-// StringRandNumber 随机数字 (Secure)
+// StringRandNumber returns a cryptographically secure random numeric string.
 func StringRandNumber(length int) (string, error) {
-	return randomString(number, length)
+	return randomString(digits, length)
 }
 
-// StringRandLetter 随机字母 (Secure)
+// StringRandLetter returns a cryptographically secure random alphabetic string.
 func StringRandLetter(length int) (string, error) {
-	return randomString(lowerLetter+upperLetter, length)
+	return randomString(lowerLetters+upperLetters, length)
 }
 
-// StringRandLowerLetter 随机小写字母 (Secure)
+// StringRandLowerLetter returns a cryptographically secure random lowercase string.
 func StringRandLowerLetter(length int) (string, error) {
-	return randomString(lowerLetter, length)
+	return randomString(lowerLetters, length)
 }
 
-// StringRandUpperLetter 随机大写字母 (Secure)
+// StringRandUpperLetter returns a cryptographically secure random uppercase string.
 func StringRandUpperLetter(length int) (string, error) {
-	return randomString(upperLetter, length)
+	return randomString(upperLetters, length)
 }
 
 func randomString(charset string, length int) (string, error) {
-	if length <= 0 {
+	if length < 0 {
+		return "", ErrNegativeLength
+	}
+	if length == 0 {
 		return "", nil
 	}
+
 	b := make([]byte, length)
 	maxIdx := big.NewInt(int64(len(charset)))
 	for i := 0; i < length; i++ {

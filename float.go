@@ -1,90 +1,114 @@
 package util
 
 import (
-	"github.com/bang-go/util/constraint"
-	"github.com/shopspring/decimal"
+	"errors"
 	"math"
 	"strconv"
+
+	"github.com/bang-go/util/constraint"
+	"github.com/shopspring/decimal"
 )
 
-// FloatToString Float转化String
-// prc precision精度
-func FloatToString[T constraint.Float](val T, prc int) (str string) {
-	str = strconv.FormatFloat(float64(val), 'f', prc, 64)
-	return
+// ErrDivisionByZero indicates that a float division helper was called with a zero divisor.
+var ErrDivisionByZero = errors.New("util: division by zero")
+
+// FloatToString formats val using fixed-point notation with prc digits after the decimal point.
+func FloatToString[T constraint.Float](val T, prc int) string {
+	return strconv.FormatFloat(float64(val), 'f', prc, floatBitSize[T]())
 }
 
-// FloatAdd 加法
-func FloatAdd[T constraint.Float](args ...T) float64 {
+// FloatAdd returns the sum of args.
+func FloatAdd[T constraint.Float](args ...T) T {
 	var result decimal.Decimal
 	for _, v := range args {
 		result = result.Add(decimal.NewFromFloat(float64(v)))
 	}
-	res, _ := result.Float64()
-	return res
+	return decimalToFloat[T](result)
 }
 
-// FloatSub 减法
-func FloatSub[T constraint.Float](minuend T, args ...T) float64 {
+// FloatSub subtracts args from minuend.
+func FloatSub[T constraint.Float](minuend T, args ...T) T {
 	result := decimal.NewFromFloat(float64(minuend))
 	for _, v := range args {
 		result = result.Sub(decimal.NewFromFloat(float64(v)))
 	}
-	res, _ := result.Float64()
-	return res
+	return decimalToFloat[T](result)
 }
 
-// FloatMul 乘法
-func FloatMul[T constraint.Float](arg1 T, args ...T) float64 {
+// FloatMul returns the product of arg1 and args.
+func FloatMul[T constraint.Float](arg1 T, args ...T) T {
 	result := decimal.NewFromFloat(float64(arg1))
 	for _, v := range args {
 		result = result.Mul(decimal.NewFromFloat(float64(v)))
 	}
-	res, _ := result.Float64()
-	return res
+	return decimalToFloat[T](result)
 }
 
-// FloatDiv 除法
-func FloatDiv[T constraint.Float](dividend T, args ...T) float64 {
+// FloatDiv divides dividend by args and returns ErrDivisionByZero when any divisor is zero.
+func FloatDiv[T constraint.Float](dividend T, args ...T) (T, error) {
 	result := decimal.NewFromFloat(float64(dividend))
 	for _, v := range args {
+		if v == 0 {
+			var zero T
+			return zero, ErrDivisionByZero
+		}
 		result = result.Div(decimal.NewFromFloat(float64(v)))
 	}
-	res, _ := result.Float64()
+	return decimalToFloat[T](result), nil
+}
+
+// MustFloatDiv divides dividend by args and panics when any divisor is zero.
+func MustFloatDiv[T constraint.Float](dividend T, args ...T) T {
+	res, err := FloatDiv(dividend, args...)
+	if err != nil {
+		panic(err)
+	}
 	return res
 }
 
-// FloatCeil 向上取整 (respects precision)
-func FloatCeil[T constraint.Float](val T, precision int32) float64 {
+// FloatCeil rounds val up at the given decimal precision.
+func FloatCeil[T constraint.Float](val T, precision int32) T {
 	v := decimal.NewFromFloat(float64(val))
 	exp := decimal.New(1, precision)
-	res, _ := v.Mul(exp).Ceil().Div(exp).Float64()
-	return res
+	return decimalToFloat[T](v.Mul(exp).Ceil().Div(exp))
 }
 
-// FloatFloor 向下取整 (respects precision)
-func FloatFloor[T constraint.Float](val T, precision int32) float64 {
+// FloatFloor rounds val down at the given decimal precision.
+func FloatFloor[T constraint.Float](val T, precision int32) T {
 	v := decimal.NewFromFloat(float64(val))
 	exp := decimal.New(1, precision)
-	res, _ := v.Mul(exp).Floor().Div(exp).Float64()
-	return res
+	return decimalToFloat[T](v.Mul(exp).Floor().Div(exp))
 }
 
-// FloatTruncate 截断
-func FloatTruncate[T constraint.Float](val T, precision int32) float64 {
+// FloatTruncate truncates val at the given decimal precision.
+func FloatTruncate[T constraint.Float](val T, precision int32) T {
 	v := decimal.NewFromFloat(float64(val))
-	res, _ := v.Truncate(precision).Float64()
-	return res
+	return decimalToFloat[T](v.Truncate(precision))
 }
 
-// FloatCompare 比较
+// FloatCompare compares v1 and v2.
 func FloatCompare[T constraint.Float](v1 T, v2 T) int {
 	cV1 := decimal.NewFromFloat(float64(v1))
 	cV2 := decimal.NewFromFloat(float64(v2))
 	return cV1.Cmp(cV2)
 }
 
-// FloatAbs 绝对值
-func FloatAbs[T constraint.Float](v T) float64 {
-	return math.Abs(float64(v))
+// FloatAbs returns the absolute value of v.
+func FloatAbs[T constraint.Float](v T) T {
+	return T(math.Abs(float64(v)))
+}
+
+func decimalToFloat[T constraint.Float](value decimal.Decimal) T {
+	res, _ := value.Float64()
+	return T(res)
+}
+
+func floatBitSize[T constraint.Float]() int {
+	var zero T
+	switch any(zero).(type) {
+	case float32:
+		return 32
+	default:
+		return 64
+	}
 }

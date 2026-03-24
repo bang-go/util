@@ -2,6 +2,7 @@ package util
 
 import "github.com/google/uuid"
 
-func NewUuid() string {
+// NewUUID returns a new UUID v4 string.
+func NewUUID() string {
 	return uuid.New().String()
 }
