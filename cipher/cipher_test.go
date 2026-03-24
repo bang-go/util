@@ -19,6 +19,12 @@ func TestHMACDigests(t *testing.T) {
 	if got := HMACSHA256Hex(key, input); got != "8de9bbe5596700556793559dd70e6486684f379d162f70a4a341b3ee383565d4" {
 		t.Fatalf("HMACSHA256Hex() = %q", got)
 	}
+	if got := HMACSHA1Hex(key, input); got != "9d103c03c33c3083033404baa0efba927305e394" {
+		t.Fatalf("HMACSHA1Hex() = %q", got)
+	}
+	if got := HmacSha1Hex(key, input); got != "9d103c03c33c3083033404baa0efba927305e394" {
+		t.Fatalf("HmacSha1Hex() = %q", got)
+	}
 }
 
 func BenchmarkSHA256Hex(b *testing.B) {
