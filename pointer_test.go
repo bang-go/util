@@ -35,6 +35,26 @@ func TestClonePtr(t *testing.T) {
 	})
 }
 
+func TestPtrIfNonZero(t *testing.T) {
+	t.Parallel()
+
+	t.Run("zero returns nil", func(t *testing.T) {
+		if util.PtrIfNonZero(uint64(0)) != nil {
+			t.Fatal("PtrIfNonZero(zero) should return nil")
+		}
+	})
+
+	t.Run("non zero returns pointer", func(t *testing.T) {
+		got := util.PtrIfNonZero(uint64(42))
+		if got == nil {
+			t.Fatal("PtrIfNonZero(non-zero) should return a non-nil pointer")
+		}
+		if *got != 42 {
+			t.Fatalf("PtrIfNonZero(non-zero) = %d, want %d", *got, 42)
+		}
+	})
+}
+
 func TestNilIfZero(t *testing.T) {
 	t.Parallel()
 

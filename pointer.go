@@ -5,6 +5,17 @@ func Ptr[T any](value T) *T {
 	return &value
 }
 
+// PtrIfNonZero returns nil when value is the zero value.
+// Otherwise it returns a pointer to an independent copy of value.
+func PtrIfNonZero[T comparable](value T) *T {
+	var zero T
+	if value == zero {
+		return nil
+	}
+
+	return Ptr(value)
+}
+
 // ClonePtr clones the value referenced by src.
 func ClonePtr[T any](src *T) *T {
 	if src == nil {
