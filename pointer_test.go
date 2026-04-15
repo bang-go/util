@@ -7,6 +7,8 @@ import (
 )
 
 func TestClonePtr(t *testing.T) {
+	t.Parallel()
+
 	t.Run("nil", func(t *testing.T) {
 		if util.ClonePtr[int64](nil) != nil {
 			t.Fatal("ClonePtr(nil) should return nil")
@@ -33,7 +35,40 @@ func TestClonePtr(t *testing.T) {
 	})
 }
 
+func TestNilIfZero(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil", func(t *testing.T) {
+		if util.NilIfZero[uint64](nil) != nil {
+			t.Fatal("NilIfZero(nil) should return nil")
+		}
+	})
+
+	t.Run("zero returns nil", func(t *testing.T) {
+		value := util.Ptr(uint64(0))
+		if util.NilIfZero(value) != nil {
+			t.Fatal("NilIfZero(zero) should return nil")
+		}
+	})
+
+	t.Run("non zero returns cloned pointer", func(t *testing.T) {
+		value := util.Ptr(uint64(42))
+		got := util.NilIfZero(value)
+		if got == nil {
+			t.Fatal("NilIfZero(non-zero) should return a non-nil pointer")
+		}
+		if got == value {
+			t.Fatal("NilIfZero(non-zero) should return a cloned pointer")
+		}
+		if *got != 42 {
+			t.Fatalf("NilIfZero(non-zero) = %d, want %d", *got, 42)
+		}
+	})
+}
+
 func TestDerefZero(t *testing.T) {
+	t.Parallel()
+
 	t.Run("nil returns zero", func(t *testing.T) {
 		if got := util.DerefZero[int64](nil); got != 0 {
 			t.Fatalf("DerefZero(nil) = %d, want 0", got)
@@ -49,6 +84,8 @@ func TestDerefZero(t *testing.T) {
 }
 
 func TestDerefOr(t *testing.T) {
+	t.Parallel()
+
 	t.Run("nil returns default", func(t *testing.T) {
 		if got := util.DerefOr[string](nil, "fallback"); got != "fallback" {
 			t.Fatalf("DerefOr(nil) = %q, want %q", got, "fallback")
@@ -64,6 +101,8 @@ func TestDerefOr(t *testing.T) {
 }
 
 func TestMustDeref(t *testing.T) {
+	t.Parallel()
+
 	value := util.Ptr(int64(42))
 	if got := util.MustDeref(value); got != 42 {
 		t.Fatalf("MustDeref(value) = %d, want 42", got)

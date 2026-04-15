@@ -15,6 +15,21 @@ func ClonePtr[T any](src *T) *T {
 	return &v
 }
 
+// NilIfZero returns nil when value is nil or points to the zero value.
+// Otherwise it returns an independent copy of value.
+func NilIfZero[T comparable](value *T) *T {
+	if value == nil {
+		return nil
+	}
+
+	var zero T
+	if *value == zero {
+		return nil
+	}
+
+	return ClonePtr(value)
+}
+
 // MustDeref returns the value referenced by ptr and panics when ptr is nil.
 func MustDeref[T any](value *T) T {
 	return *value

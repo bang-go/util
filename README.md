@@ -22,10 +22,13 @@ Small, dependency-light helpers for Go services.
 ```go
 name := util.Ptr("bang")
 copy := util.ClonePtr(name)
+normalized := util.NilIfZero(util.Ptr(uint64(42)))
 
 v1 := util.MustDeref(name)
 v2 := util.DerefOr[string](nil, "fallback")
 v3 := util.DerefZero[int64](nil)
+
+_ = normalized
 ```
 
 ### Retry helpers
