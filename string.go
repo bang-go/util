@@ -21,6 +21,34 @@ func IsBlank(s string) bool {
 	return strings.TrimSpace(s) == ""
 }
 
+// NilIfBlank trims value and returns nil when value is nil or blank.
+func NilIfBlank(value *string) *string {
+	if value == nil {
+		return nil
+	}
+
+	return PtrIfNonBlank(*value)
+}
+
+// PtrIfNonBlank trims value and returns nil when value is blank.
+func PtrIfNonBlank(value string) *string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil
+	}
+
+	return Ptr(trimmed)
+}
+
+// DerefTrimmed trims value and returns an empty string when value is nil.
+func DerefTrimmed(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return strings.TrimSpace(*value)
+}
+
 // StringRand returns a cryptographically secure random alphanumeric string.
 func StringRand(length int) (string, error) {
 	return randomString(lowerLetters+upperLetters+digits, length)

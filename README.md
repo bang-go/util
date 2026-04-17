@@ -33,6 +33,18 @@ _ = optionalID
 _ = normalized
 ```
 
+### String helpers
+
+```go
+name := util.NilIfBlank(util.Ptr("  bang  "))
+alias := util.PtrIfNonBlank("   ")
+display := util.DerefTrimmed(nil)
+
+_ = name
+_ = alias
+_ = display
+```
+
 ### Retry helpers
 
 ```go

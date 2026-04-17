@@ -17,6 +17,81 @@ func TestIsBlank(t *testing.T) {
 	}
 }
 
+func TestNilIfBlank(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil returns nil", func(t *testing.T) {
+		if got := util.NilIfBlank(nil); got != nil {
+			t.Fatalf("NilIfBlank(nil) = %v, want nil", *got)
+		}
+	})
+
+	t.Run("blank returns nil", func(t *testing.T) {
+		value := util.Ptr(" \n\t ")
+		if got := util.NilIfBlank(value); got != nil {
+			t.Fatalf("NilIfBlank(blank) = %v, want nil", *got)
+		}
+	})
+
+	t.Run("trimmed value returns cloned pointer", func(t *testing.T) {
+		value := util.Ptr("  bang  ")
+		got := util.NilIfBlank(value)
+		if got == nil {
+			t.Fatal("NilIfBlank(non-blank) should return a non-nil pointer")
+		}
+		if got == value {
+			t.Fatal("NilIfBlank should return a new pointer")
+		}
+		if *got != "bang" {
+			t.Fatalf("NilIfBlank(non-blank) = %q, want %q", *got, "bang")
+		}
+	})
+}
+
+func TestPtrIfNonBlank(t *testing.T) {
+	t.Parallel()
+
+	t.Run("blank returns nil", func(t *testing.T) {
+		if got := util.PtrIfNonBlank(" \n\t "); got != nil {
+			t.Fatalf("PtrIfNonBlank(blank) = %v, want nil", *got)
+		}
+	})
+
+	t.Run("trimmed value returns pointer", func(t *testing.T) {
+		got := util.PtrIfNonBlank("  bang  ")
+		if got == nil {
+			t.Fatal("PtrIfNonBlank(non-blank) should return a non-nil pointer")
+		}
+		if *got != "bang" {
+			t.Fatalf("PtrIfNonBlank(non-blank) = %q, want %q", *got, "bang")
+		}
+	})
+}
+
+func TestDerefTrimmed(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil returns empty string", func(t *testing.T) {
+		if got := util.DerefTrimmed(nil); got != "" {
+			t.Fatalf("DerefTrimmed(nil) = %q, want empty string", got)
+		}
+	})
+
+	t.Run("blank returns empty string", func(t *testing.T) {
+		value := util.Ptr(" \n\t ")
+		if got := util.DerefTrimmed(value); got != "" {
+			t.Fatalf("DerefTrimmed(blank) = %q, want empty string", got)
+		}
+	})
+
+	t.Run("trimmed value returns string", func(t *testing.T) {
+		value := util.Ptr("  bang  ")
+		if got := util.DerefTrimmed(value); got != "bang" {
+			t.Fatalf("DerefTrimmed(non-blank) = %q, want %q", got, "bang")
+		}
+	})
+}
+
 func TestStringRand(t *testing.T) {
 	tests := []struct {
 		name    string
